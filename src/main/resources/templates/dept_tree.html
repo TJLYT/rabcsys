@@ -26,13 +26,30 @@
 
 <script src="/js/jquery-1.7.1.js"></script>
 <script src="/js/bootstrap-treeview.js"></script>
+<!-- 引入artTemplate模板 -->
+<script src="/js/template-web.js"></script>
 
 
-<style type="text/css">
-#tree {
-	
-}
-</style>
+<!-- artTemplate模板 -->
+<script id="test" type="text/html">
+
+    {{each list value i}}
+		<tr>
+			<td>{{value.empName}}</td>
+			<td>{{value.empNumber}}</td>
+			<td>{{value.gender}}</td>
+			<td>{{value.city}}</td>
+			<td>{{value.emptype}}</td>
+			<td>{{value.departments[0].deptName}}</td>
+			<td>{{value.jobSequence}}</td>
+			<td>{{value.jobLevel}}</td>
+			<td>{{value.job}}</td>
+			
+		</tr>
+    {{/each}}
+
+</script>
+
 </head>
 <body>
 	<div class="container-fluid">
@@ -80,14 +97,18 @@
 				//将之前的表格信息置空
 				$('#tbody').empty();
 				//可以使用template来追加表格
-				for(var i in emps){
+				/* for(var i in emps){
 					$('#tbody').append("<tr><td>"+emps[i].empName+"</td><td>"+emps[i].empNumber+
 							"</td><td>"+emps[i].gender+"</td><td>"+emps[i].city+
 							"</td><td>"+emps[i].emptype+"</td><td>"+emps[i].departments[0].deptName+
 							"</td><td>"+emps[i].jobSequence+"</td><td>"+emps[i].jobLevel+
 							"</td><td>"+emps[i].job+"</td></tr>")
-				}
-				
+				} */
+				//模板数据定义，list为数组，要循环的内容
+				var empData = {list:emps};
+				var html = template('test',empData);
+				//innerHTML是js对象，不能$('#tody').innerHTML
+				document.getElementById('tbody').innerHTML = html;
 				
 			}
 		});
@@ -114,7 +135,7 @@
 			$('#tree').on('nodeSelected', function(event, data) {
 				//返回的是选中节点的数据，是一个数组
 				arr = $('#tree').treeview('getSelected');
-				console.info(arr);
+				//console.info(arr);
 				//发起ajax请求，参数为deptid，后台返回对应节点的员工信息
 				getEmpInfo(arr);
 			});
