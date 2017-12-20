@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<title>Insert title here</title>
+<link rel="stylesheet"
+	th:href="@{/webjars/bootstrap/3.2.0/css/bootstrap.min.css}"
+	href="/webjars/bootstrap/2.3.2/css/bootstrap.min.css" />
+<script th:src="@{webjars/jquery/3.2.1/jquery.js}"
+	type="text/javascript" charset="utf-8"></script>
+<script th:inline="javascript">
+
+</script>
+<style type="text/css">
+	#row{
+		width:200px;
+		margin-left:10px;
+	}
+</style>
+</head>
+<body>
+
+
+   <div class="container-fluid">
+   <div class="row"><ul sec:authorize="isAuthenticated()" class="nav navbar-nav navbar-right">
+	<li><a th:href="@{/logout}">Login Out</a></li>
+	</ul>
+	</div>
+    <div class="row" id="row">
+    	<!-- 引入thymeleaf-extras-springsecurity4依赖才显示用户名字 -->
+<!-- Logged user: <span sec:authentication="name">Bob</span><br/>
+Roles: <span sec:authentication="principal.authorities">[ROLE_USER, ROLE_ADMIN]</span> -->
+
+<!-- <ul sec:authorize="isAnonymous()" class="nav navbar-nav navbar-right">
+	<li><a th:href="@{/login}">Login</a></li>
+	<li><a th:href="@{/register}">Sign up</a></li>
+</ul> -->
+
+	<div class="list-group">
+	<a class="list-group-item active" th:href="@{/user_list}">用户列表</a>
+	<a class="list-group-item" th:href="@{/role_list}">角色列表</a>
+	<a class="list-group-item" th:href="@{/menu_list}">菜单列表</a>
+	<a class="list-group-item" th:href="@{/deptTree}">机构用户菜单</a>
+	</div>
+	
+	
+<!-- 	<a th:href="@{/admin/list}">IP</a>
+	<a th:href="@{/onlyuser}">onlyuser</a>
+	<span sec:authorize="hasAnyAuthority('ROLE_ADMIN','ROLE_USER')">YES</span><br/>
+	<span sec:authorize="hasAuthority('ROLE_USER')">USER</span>
+	<a th:href="@{/test}">test</a>
+	<a th:href="@{/tolist}">testlist</a>
+	<a th:href="@{/test2}">test2</a> -->
+    </div>
+    
+  </div>
+
+
+	
+</body>
+</html>

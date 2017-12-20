@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<title>Insert title here</title>
+<!-- Required Stylesheets -->
+<link rel="stylesheet"
+	th:href="@{/webjars/bootstrap/3.2.0/css/bootstrap.min.css}"
+	href="/webjars/bootstrap/2.3.2/css/bootstrap.min.css" />
+<link rel="stylesheet"
+	th:href="@{/bootstrap3/bootstrap-table/bootstrap-table.css}"
+	href="bootstrap3/bootstrap-table/bootstrap-table.css" />
+<link rel="stylesheet" href="/js/bootstrap-treeview.css" />
+
+
+<!-- 导入jQuery -->
+<script th:src="@{webjars/jquery/3.2.1/jquery.js}"
+	type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript"
+	th:src="@{/webjars/bootstrap/3.2.0/js/bootstrap.min.js}"></script>
+<script type="text/javascript"
+	th:src="@{/bootstrap3/bootstrap-table/bootstrap-table.js}"></script>
+<script type="text/javascript"
+	th:src="@{/bootstrap3/bootstrap-table/bootstrap-table-zh-CN.js}"></script>
+<!-- Required Javascript -->
+
+<script src="/js/jquery-1.7.1.js"></script>
+<script src="/js/bootstrap-treeview.js"></script>
+
+
+<style type="text/css">
+#tree {
+	
+}
+</style>
+</head>
+<body>
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-xs-4 col-md-3" id="tree"></div>
+			<div class="col-xs-8 col-md-9" id="emp">
+				<table class="table table-bordered table-striped">
+	<caption><b>人员信息表</b></caption>
+	<thead>
+		<tr>
+			<th>姓名</th>
+			<th>员工编号</th>
+			<th>性别</th>
+			<th>城市</th>
+			<th>员工类别</th>
+			<th>部门名称</th>
+			<th>岗位序列</th>
+			<th>岗位级别</th>
+			<th>岗位名称</th>
+		</tr>
+	</thead>
+	<tbody id="tbody">
+		
+		
+	</tbody>
+</table>
+			</div>
+		</div>
+	</div>
+
+</body>
+</html>
+<script type="text/javascript">
+	/*<![CDATA[*/
+
+	//点击相应节点时触发的请求相应员工的信息
+	function getEmpInfo(arr) {
+		//arr为点击节点时返回的节点信息，是一个数组
+		$.ajax({
+			type : "get",
+			url : arr[0].href,
+			success : function(data, status) {
+				//如果指定dataType:"json"就不需要再JSON.parse解析，否则会报解析错误异常
+				emps = JSON.parse(data);
+				//将之前的表格信息置空
+				$('#tbody').empty();
+				//可以使用template来追加表格
+				for(var i in emps){
+					$('#tbody').append("<tr><td>"+emps[i].empName+"</td><td>"+emps[i].empNumber+
+							"</td><td>"+emps[i].gender+"</td><td>"+emps[i].city+
+							"</td><td>"+emps[i].emptype+"</td><td>"+emps[i].departments[0].deptName+
+							"</td><td>"+emps[i].jobSequence+"</td><td>"+emps[i].jobLevel+
+							"</td><td>"+emps[i].job+"</td></tr>")
+				}
+				
+				
+			}
+		});
+		
+		
+	}
+
+	$(function() {
+
+		$.post("getData", function(data) {
+			
+			//获取节点json数据信息
+			var tree = JSON.parse(data);
+			/* function getTree() {
+				return tree;
+			} */
+			
+			//显示节点树
+			$('#tree').treeview({
+				data : tree
+			});
+			
+			//点击事件，在初始化treeview后执行
+			$('#tree').on('nodeSelected', function(event, data) {
+				//返回的是选中节点的数据，是一个数组
+				arr = $('#tree').treeview('getSelected');
+				console.info(arr);
+				//发起ajax请求，参数为deptid，后台返回对应节点的员工信息
+				getEmpInfo(arr);
+			});
+		});
+
+	});
+
+	/*]]>*/
+</script>

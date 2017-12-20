@@ -1,0 +1,303 @@
+<!DOCTYPE html >
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4">
+<head>
+<meta charset="UTF-8"></meta>
+<title>Insert title here</title>
+
+<!-- 导入jQuery -->
+<script th:src="@{webjars/jquery/3.2.1/jquery.js}"
+	type="text/javascript" charset="utf-8"></script>
+<!-- 导入bootstrap -->
+<link rel="stylesheet"
+	th:href="@{/webjars/bootstrap/3.2.0/css/bootstrap.min.css}"
+	href="/webjars/bootstrap/3.2.0/css/bootstrap.min.css" />
+<link rel="stylesheet"
+	th:href="@{/bootstrap3/bootstrap-table/bootstrap-table.css}"
+	href="bootstrap3/bootstrap-table/bootstrap-table.css" />
+
+<script type="text/javascript"
+	th:src="@{/webjars/bootstrap/3.2.0/js/bootstrap.min.js}"></script>
+<script type="text/javascript"
+	th:src="@{/bootstrap3/bootstrap-table/bootstrap-table.js}"></script>
+<script type="text/javascript"
+	th:src="@{/bootstrap3/bootstrap-table/bootstrap-table-zh-CN.js}"></script>
+	
+<!-- 导出excel -->
+<script type="text/javascript" th:src="@{/bootstrap3/bootstrap-table/bootstrap-table-export.js}"></script>
+<script type="text/javascript" th:src="@{/bootstrap3/bootstrap-table/tableExport.js}"></script>
+<!-- 表单参数序列化工具 -->
+<script type="text/javascript" th:src="@{/js/util.js}"></script>
+
+</head>
+<body>
+	<div class="panel-body" style="padding-bottom: 0px;">
+		<div class="panel panel-default">
+			<div class="panel-heading">查询条件</div>
+			<div class="panel-body">
+				<form id="formSearch" class="form-horizontal">
+					<div class="form-group" style="margin-top: 15px">
+						<label class="control-label col-sm-1" for="txt_search_menuname">角色名</label>
+						<div class="col-sm-3">
+							<input type="text" class="form-control" id="txt_search_menuname"
+								name="menuname" />
+						</div>
+						<label class="control-label col-sm-1" for="txt_search_state">状态</label>
+						<div class="col-sm-3">
+							<input type="text" class="form-control" id="txt_search_state"
+								name="state" />
+						</div>
+						<div class="col-sm-4" style="text-align: left;">
+							<button type="button" style="margin-left: 50px" id="btn_query"
+								class="btn btn-primary">查询</button>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+
+		<div id="toolbar" class="btn-group">
+			<button id="btn_add" type="button" class="btn btn-default">
+				<span class="glyphicon glyphicon-plus" aria-hidden="true"></span>新增
+			</button>
+			<button id="btn_edit" type="button" class="btn btn-default">
+				<span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>修改
+			</button>
+			<button id="btn_delete" type="button" class="btn btn-default">
+				<span class="glyphicon glyphicon-remove" aria-hidden="true"></span>删除
+			</button>
+		</div>
+		<table id="tb_menus"></table>
+	</div>
+
+	<div class="modal fade" id="mymodal" tabindex="-1" role="dialog"
+		aria-labelledby="myModalLabel">
+	
+	</div>
+	
+	  <!-- 信息删除确认 -->
+<div class="modal fade" id="delmodal">
+	<div class="modal-dialog">
+		<div class="modal-content message_align">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"
+					aria-label="Close">
+					<span aria-hidden="true">×</span>
+				</button>
+				<h4 class="modal-title">提示信息</h4>
+			</div>
+			<div class="modal-body">
+				<p>您确认要删除吗？</p>
+			</div>
+			<div class="modal-footer">
+				<input id="fk_id" type="hidden" />
+				<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+				<a onclick="urlSubmit()" class="btn btn-warning"
+					data-dismiss="modal">确定</a>
+			</div>
+		</div>
+		<!-- /.modal-content -->
+	</div>
+	<!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
+
+</body>
+</html>
+
+<script type="text/javascript">
+  /*<![CDATA[*/    
+	  $(function () {
+
+	    //1.初始化Table
+	    var oTable = new TableInit();
+	    oTable.Init();
+
+	    //2.初始化Button的点击事件
+	    var oButtonInit = new ButtonInit();
+	    oButtonInit.Init();
+	    
+	    $("#btn_query").click(function(){
+			  $('#tb_menus').bootstrapTable('refresh');
+	   });
+	    
+	    $("#btn_add").click(function(){
+	    	$('#mymodal').modal('show');
+	    	$('#mymodal').load('menuAdd');
+	    });
+	    
+	    $('#btn_edit').click(function(){
+	    	var selArray = $('#tb_menus').bootstrapTable('getSelections');
+	    	if(selArray.length!=1){
+	    		return ;
+	    	}
+	    	console.info(selArray);
+	    	var id = selArray[0].id;
+	       	$('#mymodal').modal('show');
+	    	$('#mymodal').load('menuEdit?id='+id);
+	    	
+	    });
+	    
+	    $('#btn_delete').click(function(){
+	    	var selArray = $('#tb_menus').bootstrapTable('getSelections');
+	    	console.info(selArray);
+	    	if(selArray.length!=1){
+	    		return ;
+	    	}
+	    	var id = selArray[0].id;
+	    	$('#fk_id').val(id);
+	       	$('#delmodal').modal('show');
+	    });
+	    
+	   
+
+	});
+
+	   
+  
+	var TableInit = function () {
+	    var oTableInit = new Object();
+	    //初始化Table
+	    oTableInit.Init = function () {
+	        $('#tb_menus').bootstrapTable({
+	            url: 'menulist',         //请求后台的URL（*）
+	            method: 'post',                      //请求方式（*）
+	            contentType:'application/x-www-form-urlencoded',
+	            toolbar: '#toolbar',                //工具按钮用哪个容器
+	            striped: true,                      //是否显示行间隔色
+	            cache: false,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+	            pagination: true,                   //是否显示分页（*）
+	            sortable: false,                     //是否启用排序
+	            sortOrder: "asc",                   //排序方式
+	            queryParams: oTableInit.queryParams,//传递参数（*）
+	            sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
+	            pageNumber:1,                       //初始化加载第一页，默认第一页
+	            pageSize: 10,                       //每页的记录行数（*）
+	            pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+	            search: true,                       //是否显示表格搜索，此搜索是客户端搜索，不会进服务端，所以，个人感觉意义不大
+	            strictSearch: true,	
+	            undefinedText: "暂无信息",				//当数据为 undefined 时显示的字符  
+	            responseHandler:responseHandler,   	//处理后台的分页结果集
+	            showColumns: true,                  //是否显示所有的列
+	            showRefresh: true,                  //是否显示刷新按钮
+	            minimumCountColumns: 2,             //最少允许的列数
+	            clickToSelect: true,                //是否启用点击选中行
+	            height: 500,                        //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
+	            uniqueId: "ID",                     //每一行的唯一标识，一般为主键列
+	            showToggle:true,                    //是否显示详细视图和列表视图的切换按钮
+	            cardView: false,                    //是否显示详细视图
+	            detailView: false,                   //是否显示父子表
+	            exportDataType:'all',  
+	            showExport: true,  //是否显示导出按钮  
+	            buttonsAlign:"right",  //按钮位置  
+	            exportTypes:['excel'],  //导出文件类型  
+	            Icons:'glyphicon-export',  
+	            exportOptions:{  
+	                ignoreColumn: [0],  //忽略某一列的索引  
+	                fileName: '菜单信息报表',  //文件名称设置  
+	                worksheetName: 'sheet1',  //表格工作区名称  
+	                tableName: '菜单信息报表',  
+	            },  
+	            columns: [{
+	                checkbox: true
+	            }, {
+	                field: 'id',
+	                title: '菜单Id'
+	            }, {
+	                field: 'menuName',
+	                title: '菜单名'
+	            }, {
+	                field: 'menuDesc',
+	                title: '菜单描述'
+	            },{
+	                field: 'menuUrl',
+	                title: '菜单URL'
+	            }, {
+	                field: 'createTime',
+	                title: '创建时间',
+	                formatter:function(value,row,index){
+		          		return new Date(parseInt(value)).toLocaleString();
+		            }
+	            }, {
+	                field: 'creater',
+	                title: '创建人'
+	            },{
+	                field: 'updateTime',
+	                title: '修改时间',
+	                formatter:function(value,row,index){
+		          		return new Date(parseInt(value)).toLocaleString();
+		            }
+	            }, {
+	                field: 'updater',
+	                title: '修改人'
+	            }, {
+	                field: 'state',
+	                title: '菜单状态'
+	            }]
+	        });
+	    };
+
+	    //得到查询的参数  
+	    //将数据拼接成json发送给后台
+	    oTableInit.queryParams = function (params) {
+	    	//将搜索框数据序列化转换为json对象
+	    	var searchTerm = $("#formSearch").serializeObject();
+	    	console.info(searchTerm);
+	        var str = {"page":this.pageNumber,"pageSize":this.pageSize,
+	        		"filter":{"filters":[{"field":"menuName","value":searchTerm.menuname}
+	        		,{"field":"state","value":searchTerm.state}],"logic":"and"},
+	        		"sort":[{"field":"id","dir":"asc"},{"field":"menuName","dir":"desc"}]};
+	        var baseData = JSON.stringify(str);
+	        var param = {
+	        	models:baseData
+	        }
+	        return param;
+	    };
+	    
+	    //后台传回的total和分页数据  responseHandler:responseHandler,   
+	    function responseHandler(res) { 
+		     if (res) {
+		         return {
+		             "rows" : res.roles,
+		             "total" :res.total
+		         };
+		        
+		     } else {
+		         return {
+		             "rows" : [],
+		             "total" : 0
+		         };
+		     }
+		 }
+	    
+	    return oTableInit;
+	};
+
+
+	var ButtonInit = function () {
+	    var oInit = new Object();
+	    var postdata = {};
+
+	    oInit.Init = function () {
+	        //初始化页面上面的按钮事件
+	    };
+
+	    return oInit;
+	};
+	
+	
+	 function urlSubmit(){
+	    	var fk_id=$('#fk_id').val();
+	    		 $.post("menuDel",{'id' : fk_id},function(result){
+	    		 		$('#tb_menus').bootstrapTable('refresh');
+	    			  });
+	    }
+	
+	
+	  	/*]]>*/	
+  
+
+  </script>
+  
+  
